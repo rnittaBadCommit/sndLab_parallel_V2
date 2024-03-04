@@ -12,13 +12,11 @@ int main()
 		{
 			transceiver.communicate();
 			_message_vec = transceiver.extract_message();
-			std::cout << "test main 10" << std::endl;
 			for (auto _it_message_vec = _message_vec.begin(); _it_message_vec != _message_vec.end(); ++_it_message_vec)
 			{
 				std::cout << "ID: " << (*_it_message_vec).get_id() << ", Content: [" << (*_it_message_vec).get_content() << "]" << std::endl;
 				transceiver.register_message_to_send(*_it_message_vec);
 			}
-			std::cout << "test main " << std::endl;
 		}
 		return (0);
 	}
