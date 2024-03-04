@@ -70,6 +70,9 @@ void	Message::set_content( const std::string content )
 void	Message::set_id( const t_id id )
 { id_ = id; }
 
+void	Message::set_sockfd( const t_sockfd __sockfd )
+{ id_ = __sockfd; }
+
 void	Message::set_is_priority( const bool is_priority )
 { is_priority_ = is_priority; }
 
@@ -77,6 +80,9 @@ const std::string	Message::get_content() const
 { return (content_); }
 
 const Message::t_id	Message::get_id() const
+{ return (id_); }
+
+const Message::t_sockfd	Message::get_sockfd() const
 { return (id_); }
 
 const bool	Message::get_is_priority() const

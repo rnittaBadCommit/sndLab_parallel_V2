@@ -70,8 +70,8 @@ void	Transceiver::shutdown()
 
 void	Transceiver::register_message_to_send( const Message& __message )
 {
-	id_to_message_to_send_map_[__message.get_id()] += __message;
-	pollfd_vec_[__message.get_id()].events = POLLIN | POLLOUT | POLLERR_ALL;
+	sockfd_to_message_to_send_map_[__message.get_sockfd()] += __message;
+	pollfd_vec_[convert_sockfd_to_i_pollfd_(__message.get_sockfd())].events = POLLIN | POLLOUT | POLLERR_ALL;
 }
 
 void	Transceiver::communicate()
@@ -106,7 +106,7 @@ void	Transceiver::communicate()
 		else if (pollfd_vec_[i].revents & POLLOUT)
 		{
 			pollfd_vec_[i].revents = 0;
-			if (send_message_to_send_(pollfd_vec_[i].revents) == SEND_FINISHED)
+			if (send_message_to_send_(pollfd_vec_[i].fd) == SEND_FINISHED)
 				pollfd_vec_[i].events = POLLIN | POLLPRI;
 		}
 		else if (pollfd_vec_[i].revents & POLLPRI)
@@ -175,13 +175,13 @@ void	Transceiver::receive_priority_message_( const t_sockfd __sockfd_client_sock
 
 bool	Transceiver::send_message_to_send_( const t_sockfd __sockfd_client_socket )
 {
-	Message&	_message_to_send = id_to_message_to_send_map_[__sockfd_client_socket];
+	Message&	_message_to_send = sockfd_to_message_to_send_map_[__sockfd_client_socket];
 	int			_ret_send;
 
 	_ret_send = send(__sockfd_client_socket, _message_to_send.get_content().c_str(), _message_to_send.get_content().length(), 0);
 	if (_ret_send == _message_to_send.get_content().length())	// 送信完了 
 	{
-		id_to_message_to_send_map_.erase(__sockfd_client_socket);
+		sockfd_to_message_to_send_map_.erase(__sockfd_client_socket);
 		return (SEND_FINISHED);
 	}
 	else
@@ -220,6 +220,16 @@ void	Transceiver::close_sockfd_to_close_()
 		_it_pollfd_vec = pollfd_vec_.erase(_it_pollfd_vec);
 		close(_sockfd_to_close);
 	}
+}
+
+const Transceiver::t_i_pollfd_	Transceiver::convert_sockfd_to_i_pollfd_( t_sockfd __sockfd ) const
+{
+	t_i_pollfd_	ret;
+
+	ret = 0;
+	while (pollfd_vec_[ret].fd != __sockfd)
+		++ret;
+	return (ret);
 }
 
 };  // namespace rnitta

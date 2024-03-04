@@ -47,6 +47,7 @@ class Transceiver
 	private:
 		// typedef
 		typedef short int		t_event;
+		typedef size_t			t_i_pollfd_;
 		static const t_event	POLLERR_ALL = POLLERR | POLLRDHUP | POLLHUP;
 		static const bool		SEND_FINISHED = true;
 		static const size_t		BUFFER_SIZE = 1000;
@@ -56,7 +57,7 @@ class Transceiver
 		std::stack<t_sockfd>	sockfd_to_close_stack_;
 
 		std::vector<Message>	received_message_vec_;
-		std::map<t_sockfd, Message>	id_to_message_to_send_map_;
+		std::map<t_sockfd, Message>	sockfd_to_message_to_send_map_;
 		
 		void	setup_();
 		const bool	is_master_socket_fd_( const t_sockfd sockfd ) const;
@@ -66,6 +67,7 @@ class Transceiver
 		bool	send_message_to_send_( const t_sockfd sockfd_client_socket );
 		void	register_sockfd_to_close_( const t_sockfd fd );
 		void	close_sockfd_to_close_();
+		const t_i_pollfd_	convert_sockfd_to_i_pollfd_( t_sockfd sockfd ) const;
 };
 
 

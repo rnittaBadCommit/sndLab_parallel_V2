@@ -11,7 +11,8 @@ class Message
 {
 	public:
 		// typedef
-		typedef	int	t_id;
+		typedef	int			t_sockfd;
+		typedef t_sockfd	t_id;
 
 		// canonical & other constructor
 		Message();
@@ -28,9 +29,11 @@ class Message
 		// getter & setter
 		void				set_content( const std::string content );
 		void				set_id( const t_id id );
+		void				set_sockfd( const t_sockfd sockfd );
 		void				set_is_priority( const bool is_priority );
 		const std::string	get_content() const;
 		const t_id			get_id() const;
+		const t_sockfd		get_sockfd() const;
 		const bool			get_is_priority() const;
 	
 	private:
