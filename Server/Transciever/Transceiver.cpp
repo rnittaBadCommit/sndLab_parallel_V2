@@ -139,7 +139,6 @@ void	Transceiver::receive_from_new_client_( const t_sockfd __sockfd_master_socke
 	_pollfd.events = POLLIN | POLLPRI | POLLERR_ALL;
 	_pollfd.revents = 0;
 	pollfd_vec_.push_back(_pollfd);
-	sockfd_to_pollfd_index_map_[_sockfd_new_client] = pollfd_vec_.size() - 1;
 }
 
 void	Transceiver::receive_from_connected_client_( const t_sockfd __sockfd_client_socket )
@@ -216,7 +215,6 @@ void	Transceiver::close_sockfd_to_close_()
 	{
 		_sockfd_to_close = sockfd_to_close_stack_.top();
 		sockfd_to_close_stack_.pop();
-		sockfd_to_pollfd_index_map_.erase(_sockfd_to_close);
 		while ((*--_it_pollfd_vec).fd != _sockfd_to_close)
 			;
 		_it_pollfd_vec = pollfd_vec_.erase(_it_pollfd_vec);

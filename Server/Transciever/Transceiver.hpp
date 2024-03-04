@@ -54,7 +54,6 @@ class Transceiver
 		std::vector<pollfd>		pollfd_vec_;
 		std::vector<t_sockfd>	sockfd_master_socket_vec_;
 		std::stack<t_sockfd>	sockfd_to_close_stack_;
-		std::map<t_sockfd, size_t>	sockfd_to_pollfd_index_map_;
 
 		std::vector<Message>	received_message_vec_;
 		std::map<t_sockfd, Message>	id_to_message_to_send_map_;
