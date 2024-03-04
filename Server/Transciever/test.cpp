@@ -18,7 +18,6 @@ int main()
 				std::cout << "ID: " << (*_it_message_vec).get_id() << ", Content: [" << (*_it_message_vec).get_content() << "]" << std::endl;
 				transceiver.register_message_to_send(*_it_message_vec);
 			}
-			transceiver.clear_message();
 			std::cout << "test main " << std::endl;
 		}
 		return (0);

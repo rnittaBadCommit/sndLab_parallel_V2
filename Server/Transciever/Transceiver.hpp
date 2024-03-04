@@ -41,8 +41,8 @@ class Transceiver
 		void		register_message_to_send( const Message& message );
 		void		communicate();
 		const std::vector<Message>&	extract_message();
-		void		clear_message();
 		void		shutdown();
+		const std::vector<t_sockfd>&	get_sockfd_closed_vec() const;
 
 	private:
 		// typedef
@@ -54,7 +54,7 @@ class Transceiver
 		std::vector<in_port_t>	port_master_socket_vec_;
 		std::vector<pollfd>		pollfd_vec_;
 		std::vector<t_sockfd>	sockfd_master_socket_vec_;
-		std::stack<t_sockfd>	sockfd_to_close_stack_;
+		std::vector<t_sockfd>	sockfd_to_close_vector_;
 
 		std::vector<Message>	received_message_vec_;
 		std::map<t_sockfd, Message>	sockfd_to_message_to_send_map_;
@@ -67,6 +67,7 @@ class Transceiver
 		bool	send_message_to_send_( const t_sockfd sockfd_client_socket );
 		void	register_sockfd_to_close_( const t_sockfd fd );
 		void	close_sockfd_to_close_();
+		void	discard_message_for_closed_sockfd();
 		const t_i_pollfd_	convert_sockfd_to_i_pollfd_( t_sockfd sockfd ) const;
 };
 

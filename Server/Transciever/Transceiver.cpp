@@ -77,8 +77,13 @@ void	Transceiver::register_message_to_send( const Message& __message )
 	pollfd_vec_[convert_sockfd_to_i_pollfd_(__message.get_sockfd())].events = POLLIN | POLLOUT | POLLERR_ALL;
 }
 
+const std::vector<Transceiver::t_sockfd>&	Transceiver::get_sockfd_closed_vec() const
+{ return (sockfd_to_close_vector_); }
+
 void	Transceiver::communicate()
 {
+	sockfd_to_close_vector_.clear();
+	received_message_vec_.clear();
 	poll(&pollfd_vec_[0], pollfd_vec_.size(), -1);	// std::vectorのデータ領域は連続していることが保証されている。 
 	for (size_t i = 0; i < pollfd_vec_.size(); ++i)
 	{
@@ -119,16 +124,12 @@ void	Transceiver::communicate()
 		}
 	}
 	close_sockfd_to_close_();
+	discard_message_for_closed_sockfd();
 }
 
 const std::vector<Message>&	Transceiver::extract_message()
 {
 	return (received_message_vec_);
-}
-
-void	Transceiver::clear_message()
-{
-	received_message_vec_.clear();
 }
 
 void	Transceiver::receive_from_new_client_( const t_sockfd __sockfd_master_socket )
@@ -206,23 +207,26 @@ const bool	Transceiver::is_master_socket_fd_( const t_sockfd __sockfd ) const
 
 void	Transceiver::register_sockfd_to_close_( const t_sockfd __sockfd )
 {
-	sockfd_to_close_stack_.push(__sockfd);
+	sockfd_to_close_vector_.push_back(__sockfd);
 }
 
 void	Transceiver::close_sockfd_to_close_()
 {
-	t_sockfd	_sockfd_to_close;
-	std::vector<pollfd>::iterator	_it_pollfd_vec = pollfd_vec_.end();
+	auto	_it_pollfd_vec = pollfd_vec_.end();
 
-	while (!sockfd_to_close_stack_.empty())
+	for (auto _it_sockfd_to_close_vec = sockfd_to_close_vector_.rbegin(); _it_sockfd_to_close_vec != sockfd_to_close_vector_.rend(); ++_it_sockfd_to_close_vec)
 	{
-		_sockfd_to_close = sockfd_to_close_stack_.top();
-		sockfd_to_close_stack_.pop();
-		while ((*--_it_pollfd_vec).fd != _sockfd_to_close)
+		while ((*--_it_pollfd_vec).fd != *_it_sockfd_to_close_vec)
 			;
 		_it_pollfd_vec = pollfd_vec_.erase(_it_pollfd_vec);
-		close(_sockfd_to_close);
+		close(*_it_sockfd_to_close_vec);
 	}
+}
+
+void	Transceiver::discard_message_for_closed_sockfd()
+{
+	for (auto _it_sockfd_to_close_vec = sockfd_to_close_vector_.begin(); _it_sockfd_to_close_vec != sockfd_to_close_vector_.end(); ++_it_sockfd_to_close_vec)
+		sockfd_to_message_to_send_map_.erase(*_it_sockfd_to_close_vec);
 }
 
 const Transceiver::t_i_pollfd_	Transceiver::convert_sockfd_to_i_pollfd_( t_sockfd __sockfd ) const
