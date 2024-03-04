@@ -40,7 +40,7 @@ void	Transceiver::setup_()
 		if ((_master_socket_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 			throw std::runtime_error("Transceiver::Transceiver(): socket() fail");
 		_pollfd.fd = _master_socket_fd;
-		_pollfd.events = POLLIN | POLLERR_ALL;
+		_pollfd.events = POLLIN_ALL | POLLERR_ALL;
 		_pollfd.revents = 0;
 		pollfd_vec_.push_back(_pollfd);
 
@@ -74,7 +74,7 @@ void	Transceiver::register_message_to_send( const Message& __message )
 		sockfd_to_message_to_send_map_[__message.get_sockfd()] += __message;
 	else
 		sockfd_to_message_to_send_map_[__message.get_sockfd()] = __message;
-	pollfd_vec_[convert_sockfd_to_i_pollfd_(__message.get_sockfd())].events = POLLIN | POLLOUT | POLLERR_ALL;
+	pollfd_vec_[convert_sockfd_to_i_pollfd_(__message.get_sockfd())].events = POLLIN_ALL | POLLOUT | POLLERR_ALL;
 }
 
 const std::vector<Transceiver::t_sockfd>&	Transceiver::get_sockfd_closed_vec() const
@@ -115,7 +115,7 @@ void	Transceiver::communicate()
 		{
 			pollfd_vec_[i].revents = 0;
 			if (send_message_to_send_(pollfd_vec_[i].fd) == SEND_FINISHED)
-				pollfd_vec_[i].events = POLLIN | POLLPRI;
+				pollfd_vec_[i].events = POLLIN_ALL | POLLERR_ALL;
 		}
 		else if (pollfd_vec_[i].revents & POLLPRI)
 		{
@@ -140,7 +140,7 @@ void	Transceiver::receive_from_new_client_( const t_sockfd __sockfd_master_socke
 	if ((_sockfd_new_client = accept(__sockfd_master_socket, NULL, NULL)) == -1)
 		throw std::runtime_error("Transceiver::receive_from_new_client_(): accept() fail");
 	_pollfd.fd = _sockfd_new_client;
-	_pollfd.events = POLLIN | POLLPRI | POLLERR_ALL;
+	_pollfd.events = POLLIN_ALL| POLLERR_ALL;
 	_pollfd.revents = 0;
 	pollfd_vec_.push_back(_pollfd);
 }
@@ -150,15 +150,11 @@ void	Transceiver::receive_from_connected_client_( const t_sockfd __sockfd_client
 	char _buf[BUFFER_SIZE + 1];
 	ssize_t	_ret_read;
 
-	received_message_vec_.push_back(Message(__sockfd_client_socket, ""));
-	std::vector<Message>::iterator	it_new_received_message = received_message_vec_.end() - 1;
-	if ((_ret_read = read(__sockfd_client_socket, _buf, BUFFER_SIZE)) > 0)
+	if ((_ret_read = read(__sockfd_client_socket, _buf, BUFFER_SIZE)) >= 0)
 	{
 		_buf[_ret_read] = '\0';
-		*it_new_received_message += std::string(_buf);
+		received_message_vec_.push_back(Message(__sockfd_client_socket, _buf));
 	}
-	else if (_ret_read == -1)
-		throw std::runtime_error("Transceiver::receive_from_connected_client_(): read() fail");
 }
 
 void	Transceiver::receive_priority_message_( const t_sockfd __sockfd_client_socket )
@@ -166,15 +162,11 @@ void	Transceiver::receive_priority_message_( const t_sockfd __sockfd_client_sock
 	char _buf[BUFFER_SIZE + 1];
 	ssize_t	_ret_recv;
 
-	received_message_vec_.push_back(Message(__sockfd_client_socket, "", true));
-	std::vector<Message>::iterator	it_new_received_message = received_message_vec_.end() - 1;
-	while ((_ret_recv = recv(__sockfd_client_socket, _buf, BUFFER_SIZE, MSG_OOB)) > 0)
+	if ((_ret_recv = recv(__sockfd_client_socket, _buf, BUFFER_SIZE, MSG_OOB))>= 0)
 	{
 		_buf[_ret_recv] = '\0';
-		*it_new_received_message += std::string(_buf);
+		received_message_vec_.push_back(Message(__sockfd_client_socket, _buf));
 	}
-	if (_ret_recv == -1)
-		throw std::runtime_error("Transceiver::receive_from_connected_client_(): read() fail");
 }
 
 bool	Transceiver::send_message_to_send_( const t_sockfd __sockfd_client_socket )

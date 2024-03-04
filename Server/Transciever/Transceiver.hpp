@@ -48,6 +48,7 @@ class Transceiver
 		// typedef
 		typedef short int		t_event;
 		typedef size_t			t_i_pollfd_;
+		static const t_event	POLLIN_ALL = POLLIN | POLLPRI;
 		static const t_event	POLLERR_ALL = POLLERR | POLLRDHUP | POLLHUP;
 		static const bool		SEND_FINISHED = true;
 		static const size_t		BUFFER_SIZE = 1000;
