@@ -188,11 +188,13 @@ bool	Transceiver::send_message_to_send_( const t_sockfd __sockfd_client_socket )
 		sockfd_to_message_to_send_map_.erase(__sockfd_client_socket);
 		return (SEND_FINISHED);
 	}
-	else
+	else if (_ret_send >= 0)
 	{
 		_message_to_send = _message_to_send.get_content().substr(_ret_send);
 		return (!SEND_FINISHED);
 	}
+	else
+		return (!SEND_FINISHED);
 }
 
 const bool	Transceiver::is_master_socket_fd_( const t_sockfd __sockfd ) const
