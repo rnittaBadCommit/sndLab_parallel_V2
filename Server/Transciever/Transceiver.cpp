@@ -70,7 +70,10 @@ void	Transceiver::shutdown()
 
 void	Transceiver::register_message_to_send( const Message& __message )
 {
-	sockfd_to_message_to_send_map_[__message.get_sockfd()] += __message;
+	if (sockfd_to_message_to_send_map_.count(__message.get_sockfd()))
+		sockfd_to_message_to_send_map_[__message.get_sockfd()] += __message;
+	else
+		sockfd_to_message_to_send_map_[__message.get_sockfd()] = __message;
 	pollfd_vec_[convert_sockfd_to_i_pollfd_(__message.get_sockfd())].events = POLLIN | POLLOUT | POLLERR_ALL;
 }
 
