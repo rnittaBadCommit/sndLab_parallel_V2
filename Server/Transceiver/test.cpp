@@ -5,9 +5,9 @@ int main()
 {
 	try
 	{
-		Transceiver	transceiver;
+		std::vector<in_port_t>	_port_vec = {8080, 8081, 8082};
+		Transceiver	transceiver(_port_vec);
 		std::vector<Message>	_message_vec;
-
 		while (1)
 		{
 			transceiver.communicate();
