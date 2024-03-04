@@ -45,6 +45,9 @@ class Transceiver
 		void		shutdown();
 
 	private:
+		// typedef
+		typedef short int		t_event;
+		static const t_event	POLLERR_ALL = POLLERR | POLLRDHUP | POLLHUP;
 		static const bool		SEND_FINISHED = true;
 		static const size_t		BUFFER_SIZE = 1000;
 		std::vector<in_port_t>	port_master_socket_vec_;

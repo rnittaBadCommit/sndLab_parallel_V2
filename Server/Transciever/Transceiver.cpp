@@ -40,7 +40,7 @@ void	Transceiver::setup_()
 		if ((_master_socket_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
 			throw std::runtime_error("Transceiver::Transceiver(): socket() fail");
 		_pollfd.fd = _master_socket_fd;
-		_pollfd.events = POLLIN;
+		_pollfd.events = POLLIN | POLLERR_ALL;
 		_pollfd.revents = 0;
 		pollfd_vec_.push_back(_pollfd);
 
@@ -71,7 +71,7 @@ void	Transceiver::shutdown()
 void	Transceiver::register_message_to_send( const Message& __message )
 {
 	id_to_message_to_send_map_[__message.get_id()] += __message;
-	pollfd_vec_[__message.get_id()].events = POLLIN | POLLOUT;
+	pollfd_vec_[__message.get_id()].events = POLLIN | POLLOUT | POLLERR_ALL;
 }
 
 void	Transceiver::communicate()
@@ -79,7 +79,19 @@ void	Transceiver::communicate()
 	poll(&pollfd_vec_[0], pollfd_vec_.size(), -1);	// std::vectorのデータ領域は連続していることが保証されている。 
 	for (size_t i = 0; i < pollfd_vec_.size(); ++i)
 	{
-		if (pollfd_vec_[i].revents & POLLIN)
+		if (pollfd_vec_[i].revents & POLLERR)	// POLLRDHUPを検知した場合もreventsのPOLLINフラグが立ってしまうので、POLLRDHUPを先に見る必要あり
+		{
+			register_sockfd_to_close_(pollfd_vec_[i].fd);
+		}
+		else if (pollfd_vec_[i].revents & POLLHUP)
+		{
+			register_sockfd_to_close_(pollfd_vec_[i].fd);
+		}
+		else if (pollfd_vec_[i].revents & POLLRDHUP)
+		{
+			register_sockfd_to_close_(pollfd_vec_[i].fd);
+		}
+		else if (pollfd_vec_[i].revents & POLLIN)
 		{
 			pollfd_vec_[i].revents = 0;
 			if (is_master_socket_fd_(pollfd_vec_[i].fd))
@@ -101,18 +113,6 @@ void	Transceiver::communicate()
 		{
 			pollfd_vec_[i].revents = 0;
 			receive_priority_message_(pollfd_vec_[i].fd);
-		}
-		else if (pollfd_vec_[i].revents & POLLERR)
-		{
-			register_sockfd_to_close_(pollfd_vec_[i].fd);
-		}
-		else if (pollfd_vec_[i].revents & POLLHUP)
-		{
-			register_sockfd_to_close_(pollfd_vec_[i].fd);
-		}
-		else if (pollfd_vec_[i].revents & POLLRDHUP)
-		{
-			register_sockfd_to_close_(pollfd_vec_[i].fd);
 		}
 	}
 	close_sockfd_to_close_();
@@ -136,7 +136,7 @@ void	Transceiver::receive_from_new_client_( const t_sockfd __sockfd_master_socke
 	if ((_sockfd_new_client = accept(__sockfd_master_socket, NULL, NULL)) == -1)
 		throw std::runtime_error("Transceiver::receive_from_new_client_(): accept() fail");
 	_pollfd.fd = _sockfd_new_client;
-	_pollfd.events = POLLIN | POLLPRI;
+	_pollfd.events = POLLIN | POLLPRI | POLLERR_ALL;
 	_pollfd.revents = 0;
 	pollfd_vec_.push_back(_pollfd);
 	sockfd_to_pollfd_index_map_[_sockfd_new_client] = pollfd_vec_.size() - 1;
@@ -149,14 +149,12 @@ void	Transceiver::receive_from_connected_client_( const t_sockfd __sockfd_client
 
 	received_message_vec_.push_back(Message(__sockfd_client_socket, ""));
 	std::vector<Message>::iterator	it_new_received_message = received_message_vec_.end() - 1;
-	while ((_ret_read = read(__sockfd_client_socket, _buf, BUFFER_SIZE)) > 0)
+	if ((_ret_read = read(__sockfd_client_socket, _buf, BUFFER_SIZE)) > 0)
 	{
 		_buf[_ret_read] = '\0';
 		*it_new_received_message += std::string(_buf);
-		if (_ret_read != BUFFER_SIZE)
-			break;
 	}
-	if (_ret_read == -1)
+	else if (_ret_read == -1)
 		throw std::runtime_error("Transceiver::receive_from_connected_client_(): read() fail");
 }
 
