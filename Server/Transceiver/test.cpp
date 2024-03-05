@@ -11,7 +11,7 @@ int main()
 		while (1)
 		{
 			transceiver.communicate();
-			_message_vec = transceiver.extract_message();
+			_message_vec = transceiver.extract_message()
 			for (auto _it_message_vec = _message_vec.begin(); _it_message_vec != _message_vec.end(); ++_it_message_vec)
 			{
 				std::cout << "ID: " << (*_it_message_vec).get_id() << ", Content: [" << (*_it_message_vec).get_content() << "]" << std::endl;
