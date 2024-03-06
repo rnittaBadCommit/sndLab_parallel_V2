@@ -5,11 +5,7 @@ namespace rnitta
 
 
 Server::Server()
-{
-
-}
-
-Server::Server( const Server& other )
+: transceiver_(), messageManager_(transceiver_)
 {
 
 }
@@ -17,14 +13,6 @@ Server::Server( const Server& other )
 Server::~Server()
 {
 
-}
-
-Server&	Server::operator=( const Server& other )
-{
-	if (this == &other)
-		return (*this);
-	
-	return (*this);
 }
 
 

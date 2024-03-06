@@ -4,11 +4,6 @@ namespace rnitta
 {
 
 
-MessageManager::MessageManager()
-{
-
-}
-
 MessageManager::MessageManager( const MessageManager& other )
 {
 
@@ -25,6 +20,12 @@ MessageManager&	MessageManager::operator=( const MessageManager& other )
 		return (*this);
 
 	return (*this);
+}
+
+MessageManager::MessageManager( Transceiver& __transceiver )
+: transceiver_(__transceiver)
+{
+
 }
 
 void	MessageManager::send_and_recv_message()

@@ -15,10 +15,12 @@ class MessageManager
 	public:
 		typedef Message::t_id	t_id;
 		// canonical
-		MessageManager();
+		MessageManager() = delete;
 		MessageManager( const MessageManager& other );
 		~MessageManager();
 		MessageManager&	operator=( const MessageManager& other );
+
+		MessageManager( Transceiver& transceiver );
 
 		void	send_and_recv_message();
 		const std::vector<Message>&	get_message_vec() const;
@@ -26,7 +28,7 @@ class MessageManager
 		void	clear_message_by_id( const t_id id );
 
 	private:
-		Transceiver	transceiver_;
+		Transceiver&	transceiver_;
 		std::map<t_id, Message>	id_to_message_map_;
 		std::vector<Message>	message_updated_vec_;
 	
