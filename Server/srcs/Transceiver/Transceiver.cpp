@@ -60,6 +60,9 @@ void	Transceiver::setup_()
 	std::cout << "Transceiver successfully started" << std::endl;
 }
 
+const std::vector<in_port_t>	Transceiver::get_port_vec() const
+{ return (port_master_socket_vec_); }
+
 void	Transceiver::shutdown()
 {
 	for (size_t i = 0; i < pollfd_vec_.size(); ++i)

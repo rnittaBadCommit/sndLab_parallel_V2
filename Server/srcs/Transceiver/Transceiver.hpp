@@ -37,12 +37,16 @@ class Transceiver
 		Transceiver( const std::vector<in_port_t> port_vec );
 		Transceiver( size_t num_port );
 
+		// getter
+		const std::vector<in_port_t>	get_port_vec() const;
+
 		// function
 		void		register_message_to_send( const Message& message );
 		void		communicate();
 		const std::vector<Message>&	extract_message();
 		void		shutdown();
 		const std::vector<t_sockfd>&	get_sockfd_closed_vec() const;
+
 
 	private:
 		// typedef
