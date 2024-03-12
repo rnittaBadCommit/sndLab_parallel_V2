@@ -1,6 +1,8 @@
 #ifndef REQUESTMANAGER_HPP
 # define REQUESTMANAGER_HPP
 
+# include "../Request/Request.hpp"
+
 namespace rnitta
 {
 
@@ -15,13 +17,10 @@ class RequestManager
 		RequestManager&	operator=( const RequestManager& other );
 
 		// function
-		
-
 	private:
 };
 
 
 };	// namespace rnitta
-
 
 #endif
